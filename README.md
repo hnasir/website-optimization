@@ -143,4 +143,3 @@ The following sites were referenced when working on this project:
 * <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/transform">Mozilla Developer: CSS Transform</a>
 * <a href="http://csstriggers.com/">CSS Triggers</a>
 * <a href="http://www.kirupa.com/html5/setting_css_styles_using_javascript.htm">CSS Style using Javascript</a>
-
