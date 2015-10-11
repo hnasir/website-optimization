@@ -1,0 +1,31 @@
+{
+  "name": "WebsiteOptimization",
+  "version": "1.0.0",
+  "description": "Udacity FEWD Optimization project",
+  "main": "index.html",
+  "dependencies": {
+    "critical": "^0.6.0",
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-exit": "^0.0.2",
+    "gulp-imagemin": "^2.3.0",
+    "gulp-minify-html": "^1.0.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.4.1",
+    "run-sequence": "^1.1.4"
+  },
+  "devDependencies": {
+    "critical": "^0.6.0",
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-exit": "^0.0.2",
+    "gulp-imagemin": "^2.3.0",
+    "gulp-minify-html": "^1.0.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.4.1",
+    "run-sequence": "^1.1.4"
+  },
+  "homepage": "https://github.com/hnasir/fewd-website-optimization#readme"
+}
