@@ -54,6 +54,7 @@ The following was done in the updatePositions method to achieve this:
 2. Triggering code to access DOM only once instead of multiple times during for-loop and storing it in object array for use later. This prevents the layout thrashing that was initially bringing down the FPS performance.
 3. Repetitive and redundent mathematical calculation done for the phase pixel distance movement for each pizza element was removed out of the for-loop and instead computed only once since there are only 5 distince phases. Values were stored in a Phases array object and accessed more quickly instead of original recalculation approach.
 4. CSS 'transform' was used to replace 'left' when updating moving pizza position since the former requires less browser resources as it does not trigger screen layout or paint
+5. For-loop does calculation of array length only once to prevent redundent recalculation 
 
 ```js
 // Moves the sliding background pizzas based on scroll position
@@ -70,10 +71,10 @@ function updatePositions() {
   for (var j = 0; j < 5; j++) {
     phases.push(100 * Math.sin((scrollPos / 1250) + j));
   }
-
-  for (var i = 0; i < items.length; i++) {
+  // refactor for-loop code to calculate length of array only once
+  for (var i = 0, len = items.length; i < len; i++) {
     // replaced left with transform which does not trigger layout and paint to improve page drawing performance
-    items[i].style.transform = 'translateX(' + (items[i].basicLeft + phases[i%5]) + 'px)';
+    items[i].style.transform = 'translateX(' + phases[i%5] + 'px)';
   }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
@@ -87,21 +88,25 @@ function updatePositions() {
 }
 ```
 
-The number of moving pizzas drawn on screen was also reduced from 200 to 24 since not that many are required for display on the browser screens
+The number of moving pizzas drawn on screen was reduced and calculated dynamically based on screen height since original number of 200 is not required for display on typical browser screens.
+
+elem.basicLeft was also replaced with elem.style.left in conjunction with use of style.transform and translateX in updatePositions().
 
 ```js
 // Generates the sliding pizzas when the page loads.
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-  // reduced number of sliding pizzas added from 200 to 24 as screen space cannot display that many
-  for (var i = 0; i < 24; i++) {
+  // calculate optimum number of pizzas required
+  var numPizzas = Math.floor(window.screen.height / s) * 8;
+  for (var i = 0; i < numPizzas; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
     elem.src = "images/pizza.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
-    elem.basicLeft = (i % cols) * s;
+    // replace elem.basicLeft with elem.style.left
+    elem.style.left = (i % cols) * s + 'px';
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
     document.querySelector("#movingPizzas1").appendChild(elem);
   }
@@ -114,12 +119,43 @@ document.addEventListener('DOMContentLoaded', function() {
 The following changes were made to bring down time taken for browser to resize pizza size when slider is moved
 
 1. Retrieving randomPizzaContainer elements using faster DOM accessor method getElementsByClassName
-2. Triggering code to access DOM only once instead of multiple times during for-loop and storing it in object array for use later. This prevents the layout thrashing that increases time for resizing of pizza by browser
-3. Calculation of size difference and new width of pizza is also taken out of the for-loop and done once only since all the pizza containers are of the same width to begin with, hence calculation only needs to be done once and newwidth value can be used multiple times to set value for all pizza containers
+2. Replace querySelector with faster getElementById Web API call
+3. Triggering code to access DOM only once instead of multiple times during for-loop and storing it in object array for use later. This prevents the layout thrashing that increases time for resizing of pizza by browser
+4. Calculation of size difference and new width of pizza is also taken out of the for-loop and done once only since all the pizza containers are of the same width to begin with, hence calculation only needs to be done once and newwidth value can be used multiple times to set value for all pizza containers
+5. For-loop does calculation of array length only once to prevent redundent recalculation
 
 ```js
+// Returns the size difference to change a pizza element from one size to another. Called by changePizzaSlices(size).
+  function determineDx (elem, size) {
+    var oldwidth = elem.offsetWidth;
+    // replace querySelector with getElementById Web API call that is faster
+    var windowwidth = document.getElementById("randomPizzas").offsetWidth;
+    var oldsize = oldwidth / windowwidth;
+
+    // TODO: change to 3 sizes? no more xl?
+    // Changes the slider value to a percent width
+    function sizeSwitcher (size) {
+      switch(size) {
+        case "1":
+          return 0.25;
+        case "2":
+          return 0.3333;
+        case "3":
+          return 0.5;
+        default:
+          console.log("bug in sizeSwitcher");
+      }
+    }
+
+    var newsize = sizeSwitcher(size);
+    var dx = (newsize - oldsize) * windowwidth;
+
+    return dx;
+  }
+
   // Iterates through pizza elements on the page and changes their widths
   function changePizzaSizes(size) {
+
     // call selector once to store array of all pizza containers instead of during each loop
     var pizzaContainers = document.getElementsByClassName("randomPizzaContainer");
     // get size difference once only using first pizza in array as all pizzas have the same size
@@ -127,10 +163,22 @@ The following changes were made to bring down time taken for browser to resize p
     // calculate new width of all pizzas outside for loop only once using first pizza in array
     var newwidth = (pizzaContainers[0].offsetWidth + dx) + 'px';
 
-    for (var i = 0; i < pizzaContainers.length; i++) {
+  // refactor for-loop code to calculate length of array only once
+    for (var i = 0, len = pizzaContainers.length; i < len; i++) {
       pizzaContainers[i].style.width = newwidth;
     }
   }
+```
+
+Page loading speed was improved by morning pizzasDiv declaration outside of for loop so only one call to DOM is required instead of calling during every loop
+
+```js
+// bring array declaration outside of for-loop to ony make single DOM call
+var pizzasDiv = document.getElementById("randomPizzas");
+// This for-loop actually creates and appends all of the pizzas when the page loads
+for (var i = 2; i < 100; i++) {
+  pizzasDiv.appendChild(pizzaElementGenerator(i));
+}
 ```
 
 ## References
